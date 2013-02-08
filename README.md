@@ -427,6 +427,7 @@ Valid values are
 An example for delete would be
 
     {
+        "db": <db_name>,
         "action": "delete",
         "collection": <collection>,
         "matcher": <matcher>,

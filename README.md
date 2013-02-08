@@ -30,7 +30,7 @@ For example:
         "host": "192.168.1.100",
         "port": 27000
         "db_name": "my_db"
-    }        
+    }
     
 Let's take a look at each field in turn:
 
@@ -50,18 +50,21 @@ Saves a document in the database.
 To save a document send a JSON message to the module main address:
 
     {
+        "db": <db_name>,
         "action": "save",
         "collection": <collection>,
         "document": <document>
-    }     
+    }
     
 Where:
+* `db` is the name of Mongo DB where the collection resides. Setting this overrides the default db and writes to the given db. The field is optional.
 * `collection` is the name of the MongoDB collection that you wish to save the document in. This field is mandatory.
 * `document` is the JSON document that you wish to save.
 
 An example would be:
 
     {
+        "db": "customer1",
         "action": "save",
         "collection": "users",
         "document": {
@@ -71,7 +74,7 @@ An example would be:
             "username": "tim",
             "password": "wibble"
         }
-    }  
+    }
     
 When the save complete successfully, a reply message is sent back to the sender with the following data:
 
@@ -106,6 +109,7 @@ Uses the Mongodb update function: http://www.mongodb.org/display/DOCS/Updating
 To update a document send a JSON message to the module main address:
 
     {
+        "db": <db_name>,
         "action": "update",
         "collection": <collection>,
         "criteria": {
@@ -119,12 +123,14 @@ To update a document send a JSON message to the module main address:
     }  
 
 Where:
- * `collection` is the name of the MongoDB collection that you wish to save the document in. This field is mandatory.
+* `db` is the name of Mongo DB where the collection resides. Setting this overrides the default db and writes to the given db. The field is optional.
+* `collection` is the name of the MongoDB collection that you wish to save the document in. This field is mandatory.
 
 
 An example would be:
 
     {
+        "db" : "customer1",
         "action": "update",
         "collection": "users",
         "criteria": {
@@ -140,10 +146,6 @@ An example would be:
     }
 
 
-
-
-
-
 ### Find
 
 Finds matching documents in the database.
@@ -151,6 +153,7 @@ Finds matching documents in the database.
 To find documents send a JSON message to the module main address:
 
     {
+        "db": <db_name>,
         "action": "find",
         "collection": <collection>,
         "matcher": <matcher>,
@@ -158,9 +161,10 @@ To find documents send a JSON message to the module main address:
         "skip": <offset>,
         "limit": <limit>,
         "batch_size": <batch_size>
-    }     
+    }
     
 Where:
+* `db` is the name of Mongo DB where the collection resides. Setting this overrides the default db and writes to the given db. The field is optional.
 * `collection` is the name of the MongoDB collection that you wish to search in in. This field is mandatory.
 * `matcher` is a JSON object that you want to match against to find matching documents. This obeys the normal MongoDB matching rues.
 * `keys` is an optional JSON object that contains the fields that should be returned for matched documents. See MongoDB manual for more information. Example: { "name": 1 } will only return objects with _id and the name field
@@ -171,12 +175,13 @@ Where:
 An example would be:
 
     {
+        "db": "customer1",
         "action": "find",
         "collection": "orders",
         "matcher": {
             "item": "cheese"
         }
-    }  
+    }
     
 This would return all orders where the `item` field has the value `cheese`. 
 
@@ -185,7 +190,7 @@ When the find complete successfully, a reply message is sent back to the sender 
     {
         "status": "ok",
         "results": <results>
-    }   
+    }
     
 Where `results` is a JSON array containing the results of the find operation. For example:
 
@@ -222,6 +227,7 @@ Where `message` is an error message.
 If you would like to paginate your result :
 
     {
+        "db": "customer1",
         "action": "find",
         "collection": "orders",
         "skip"  : 10,
@@ -243,6 +249,7 @@ Count all matching document in the database.
 To count a document send a JSON message to the module main address:
 
     {
+        "db": <db_name>,
         "action": "count",
         "collection": <collection>,
         "matcher": <matcher>
@@ -254,6 +261,8 @@ When the count complete successfully, a reply message is sent back to the sender
          "status": "ok",
          "count" : <number>
     }
+
+* `db` is the name of Mongo DB where the collection resides. Setting this overrides the default db and writes to the given db. The field is optional.
 
 
 #### Batching
@@ -285,9 +294,10 @@ For instance, in JavaScript you might do something like:
 
     // Send the find request
     eb.send('foo.myPersistor', {
+        db: "customer1",
         action: 'find',
         collection: 'items',
-        matcher: {}        
+        matcher: {}   
     }, createReplyHandler());
     
 If there is more data to be requested and you do not reply to get the next batch within a timeout (10 seconds), then the underlying MongoDB cursor will be closed, and any further attempts to request more will fail.    
@@ -300,13 +310,15 @@ Finds a single matching document in the database.
 To find a document send a JSON message to the module main address:
 
     {
+        "db": <db_name>,
         "action": "findone",
         "collection": <collection>,
         "matcher": <matcher>,
         "keys": <keys>
-    }     
+    }
     
 Where:
+* `db` is the name of Mongo DB where the collection resides. Setting this overrides the default db and writes to the given db. The field is optional.
 * `collection` is the name of the MongoDB collection that you wish to search in in. This field is mandatory.
 * `matcher` is a JSON object that you want to match against to find a matching document. This obeys the normal MongoDB matching rues.
 * `keys` is an optional JSON object that contains the fields that should be returned for matched documents. See MongoDB manual for more information. Example: { "name": 1 } will only return objects with _id and the name field
@@ -316,6 +328,7 @@ If more than one document matches, just the first one will be returned.
 An example would be:
 
     {
+        "db": "customer1",
         "action": "findone",
         "collection": "items",
         "matcher": {
@@ -330,7 +343,7 @@ When the find complete successfully, a reply message is sent back to the sender 
     {
         "status": "ok",
         "result": <result>
-    }       
+    }  
     
 If an error occurs in finding the documents a reply is returned:
 
@@ -348,12 +361,14 @@ Deletes a matching documents in the database.
 To delete documents send a JSON message to the module main address:
 
     {
+        "db": <db_name>,
         "action": "delete",
         "collection": <collection>,
         "matcher": <matcher>
-    }     
+    }
     
 Where:
+* `db` is the name of Mongo DB where the collection resides. Setting this overrides the default db and writes to the given db. The field is optional.
 * `collection` is the name of the MongoDB collection that you wish to delete from. This field is mandatory.
 * `matcher` is a JSON object that you want to match against to delete matching documents. This obeys the normal MongoDB matching rues.
 
@@ -362,12 +377,13 @@ All documents that match will be deleted.
 An example would be:
 
     {
+        "db": "customer1",
         "action": "delete",
         "collection": "items",
         "matcher": {
             "_id": "ffeef2a7-5658-4905-a37c-cfb19f70471d"
         }
-    }  
+    }
     
 This would delete the item with the specified id.
 
@@ -376,7 +392,7 @@ When the find complete successfully, a reply message is sent back to the sender 
     {
         "status": "ok",
         "number": <number>
-    }       
+    }  
     
 Where `number` is the number of documents deleted.    
     

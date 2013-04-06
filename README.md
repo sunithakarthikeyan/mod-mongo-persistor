@@ -1,6 +1,6 @@
-# MongoDB Persistor
+# Multi MongoDB Persistor
 
-This module allows data to be saved, retrieved, searched for, and deleted in a MongoDB instance. MongoDB is a great match for persisting vert.x data since it natively handles JSON (BSON) documents. To use this module you must have a MongoDB instance running on your network.
+This module allows data to be saved, retrieved, searched for, and deleted in different Mongo databases. MongoDB is a great match for persisting vert.x data since it natively handles JSON (BSON) documents. To use this module you must have a MongoDB instance running on your network.
 
 This is a worker module and must be started as a worker verticle.
 
@@ -429,6 +429,7 @@ Valid values are
 An example for delete would be
 
     {
+        "db": <db_name>,
         "action": "delete",
         "collection": <collection>,
         "matcher": <matcher>,

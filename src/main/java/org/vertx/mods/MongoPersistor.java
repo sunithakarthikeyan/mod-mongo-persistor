@@ -16,17 +16,26 @@
 
 package org.vertx.mods;
 
-import com.foursquare.fongo.Fongo;
-import com.mongodb.*;
-import com.mongodb.util.JSON;
+import java.net.UnknownHostException;
+import java.util.UUID;
+
 import org.vertx.java.busmods.BusModBase;
 import org.vertx.java.core.Handler;
 import org.vertx.java.core.eventbus.Message;
 import org.vertx.java.core.json.JsonArray;
 import org.vertx.java.core.json.JsonObject;
 
-import java.net.UnknownHostException;
-import java.util.UUID;
+import com.foursquare.fongo.Fongo;
+import com.mongodb.BasicDBObject;
+import com.mongodb.CommandResult;
+import com.mongodb.DB;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
+import com.mongodb.Mongo;
+import com.mongodb.WriteConcern;
+import com.mongodb.WriteResult;
+import com.mongodb.util.JSON;
 
 /**
  * MongoDB Persistor Bus Module
@@ -37,47 +46,48 @@ import java.util.UUID;
  * @author <a href="http://tfox.org">Tim Fox</a>
  * @author Thomas Risberg
  */
-public class MongoPersistor extends BusModBase implements Handler<Message<JsonObject>> {
+public class MongoPersistor extends BusModBase implements
+        Handler<Message<JsonObject>> {
 
-  protected String address;
-  protected String host;
-  protected int port;
-  protected String dbName;
-  protected String username;
-  protected String password;
+    protected String address;
+    protected String host;
+    protected int port;
+    protected String dbName;
+    protected String username;
+    protected String password;
 
-  protected Mongo mongo;
-  protected DB db;
+    protected Mongo mongo;
+    protected DB db;
 
-  public void start() {
-    super.start();
+    public void start() {
+        super.start();
 
-    address = getOptionalStringConfig("address", "vertx.mongopersistor");
-    host = getOptionalStringConfig("host", "localhost");
-    port = getOptionalIntConfig("port", 27017);
-    dbName = getOptionalStringConfig("db_name", "default_db");
-    username = getOptionalStringConfig("username", null);
-    password = getOptionalStringConfig("password", null);
-    boolean fake = getOptionalBooleanConfig("fake", false);
+        address = getOptionalStringConfig("address", "vertx.mongopersistor");
+        host = getOptionalStringConfig("host", "localhost");
+        port = getOptionalIntConfig("port", 27017);
+        dbName = getOptionalStringConfig("db_name", "default_db");
+        username = getOptionalStringConfig("username", null);
+        password = getOptionalStringConfig("password", null);
+        boolean fake = getOptionalBooleanConfig("fake", false);
 
-    if (fake) {
-      Fongo fongo = new Fongo("fongo server");
-      db = fongo.getDB(dbName);
-      mongo = fongo.getMongo();
-    } else {
-      try {
-        mongo = new Mongo(host, port);
-        db = getDB(dbName);
-        if (username != null && password != null) {
-          db.authenticate(username, password.toCharArray());
+        if (fake) {
+            Fongo fongo = new Fongo("fongo server");
+            db = fongo.getDB(dbName);
+            mongo = fongo.getMongo();
+        } else {
+            try {
+                mongo = new Mongo(host, port);
+                db = getDB(dbName);
+                if (username != null && password != null) {
+                    db.authenticate(username, password.toCharArray());
+                }
+            } catch (UnknownHostException e) {
+                logger.error("Failed to connect to mongo server", e);
+            }
         }
-      } catch (UnknownHostException e) {
-        logger.error("Failed to connect to mongo server", e);
-      }
-    }
 
-    eb.registerHandler(address, this);
-  }
+        eb.registerHandler(address, this);
+    }
 
     public void stop() {
         mongo.close();
@@ -401,8 +411,8 @@ public class MongoPersistor extends BusModBase implements Handler<Message<JsonOb
     private void getCollections(Message<JsonObject> message) {
         JsonObject reply = new JsonObject();
         DB currentDb = getDB(message.body.getString("db"));
-        reply.putArray("collections", new JsonArray(currentDb.getCollectionNames()
-                .toArray()));
+        reply.putArray("collections", new JsonArray(currentDb
+                .getCollectionNames().toArray()));
         sendOK(message, reply);
     }
 

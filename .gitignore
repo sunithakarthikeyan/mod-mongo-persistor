@@ -1,4 +1,5 @@
 .classpath
+.DS_Store
 .gradle
 .idea
 .project
@@ -7,3 +8,4 @@ module.iml
 bin
 build
 out
+/mods

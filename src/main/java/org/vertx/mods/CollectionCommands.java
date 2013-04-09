@@ -11,13 +11,10 @@ import com.mongodb.util.JSON;
 public class CollectionCommands {
     public JsonObject execute(DBCollection dbc, JsonObject message) {
 
-        String action = message.getString("action");
-        if (action == null) {
-            return null;
-        }
+        String command = message.getString("command");
 
-        switch (action) {
-        case "ensureIndex":
+        switch (command.toLowerCase()) {
+        case "ensureindex":
             dbc.ensureIndex(jsonToDBObject(message.getObject("document")));
             return getAsJson("");
 
@@ -26,14 +23,17 @@ public class CollectionCommands {
             return getAsJson(l);
 
         default:
-            return null;
+            throw new RuntimeException("Unsupported Command.");
         }
-
     }
 
-    private JsonObject getAsJson(Object o) {
+    private JsonObject getAsJson(String s) {
         return new JsonObject().putString("result",
-                o == null ? "" : o.toString());
+                s == null || !s.isEmpty() ? "" : s.toString());
+    }
+
+    private JsonObject getAsJson(Long l) {
+        return new JsonObject().putValue("result", l == 0l ? 0l : l);
     }
 
     private DBObject jsonToDBObject(JsonObject object) {
@@ -50,8 +50,9 @@ public class CollectionCommands {
             JsonObject message = new JsonObject();
             message.putString("db", "test_db");
             message.putString("collection", "testcoll");
-            message.putString("action", "count");
-            message.putObject("document", new JsonObject());
+            message.putString("action", "ensureindex");
+            message.putObject("document",
+                    new JsonObject().putString("orderinfo", "1"));
 
             JsonObject j = cc.execute(dbc, message);
             System.out.println(j.toString());

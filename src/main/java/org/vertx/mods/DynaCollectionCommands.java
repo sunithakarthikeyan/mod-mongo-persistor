@@ -17,10 +17,7 @@ public class DynaCollectionCommands {
 
     public JsonObject execute(DBCollection dbc, JsonObject message) {
 
-        String command = message.getString("action");
-        if (command == null) {
-            return null;
-        }
+        String command = message.getString("command");
         List<Object> params = new ArrayList<>();
         params.add(jsonToDBObject(message.getObject("document")));
 
@@ -67,9 +64,9 @@ public class DynaCollectionCommands {
             JsonObject message = new JsonObject();
             message.putString("db", "test_db");
             message.putString("collection", "testcoll");
-            message.putString("action", "ensureIndex");
-            message.putObject("document",
-                    new JsonObject().putValue("orderDate", 1));
+            message.putString("action", "command");
+            message.putString("command", "count");
+            message.putObject("document", new JsonObject());
 
             DynaCollectionCommands cc = new DynaCollectionCommands();
             JsonObject j = cc.execute(dbc, message);

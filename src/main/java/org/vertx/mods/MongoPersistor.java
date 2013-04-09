@@ -59,6 +59,8 @@ public class MongoPersistor extends BusModBase implements
     protected Mongo mongo;
     protected DB db;
 
+    private CollectionCommands collectionCommands = new CollectionCommands();
+
     public void start() {
         super.start();
 
@@ -129,6 +131,7 @@ public class MongoPersistor extends BusModBase implements
             break;
         case "command":
             runCommand(message);
+            break;
         default:
             sendError(message, "Invalid action: " + action);
             return;
@@ -434,18 +437,24 @@ public class MongoPersistor extends BusModBase implements
     }
 
     private void runCommand(Message<JsonObject> message) {
-        JsonObject reply = new JsonObject();
-
         String command = getMandatoryString("command", message);
-
         if (command == null) {
             return;
         }
 
         DB currentDb = getDB(message.body.getString("db"));
-        CommandResult result = currentDb.command(command);
+        JsonObject reply;
 
-        reply.putObject("result", new JsonObject(result.toString()));
+        String collection = message.body.getString("collection");
+        if (collection != null && !collection.isEmpty()) {
+            DBCollection coll = currentDb.getCollection(collection);
+            reply = collectionCommands.execute(coll, message.body);
+        } else {
+            CommandResult result = currentDb.command(command);
+            reply = new JsonObject().putObject("result",
+                    new JsonObject(result.toString()));
+        }
+
         sendOK(message, reply);
     }
 

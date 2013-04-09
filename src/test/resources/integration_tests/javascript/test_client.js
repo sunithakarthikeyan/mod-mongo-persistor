@@ -463,4 +463,45 @@ function testCount() {
   });
 }
 
+function testCollectionCountUsingCommand() {
+
+	  var num = 10;
+
+	  for (var i = 0; i < num; i++) {
+	    eb.send('test.persistor', {
+	      collection: 'testcoll',
+	      action: 'save',
+	      document: {
+	        name: 'tim',
+	        age: Math.floor(Math.random()*11)
+	      }
+	    }, function(reply) {
+	      vassert.assertEquals('ok', reply.status);
+	    });
+	  }
+	
+	  eb.send('test.persistor', {
+	    collection: 'testcoll',
+	    action: 'command',
+	    command: 'count',
+	    document: {},
+	  }, function(reply) {
+	    vassert.assertEquals('ok', reply.status);
+	    vassert.assertEquals(10, reply.result, 0);
+	    vassert.testComplete();
+	  });
+	}
+
+
+function testRunCommand() {
+
+	  eb.send('test.persistor', {
+	    action: 'command',
+	    command: '{ dbStats: 1, scale: 1 }'
+	  }, function(reply) {
+	    vassert.assertEquals('ok', reply.status);
+	    vassert.testComplete();
+	  });
+	}
+
 initTests(this);
